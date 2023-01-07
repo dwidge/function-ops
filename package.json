@@ -10,6 +10,7 @@
   },
   "files": [
     "src",
+    "!src/__tests__",
     "README.md",
     "LICENSE"
   ],
