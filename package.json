@@ -1,6 +1,6 @@
 {
   "name": "@dwidge/function-ops",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Instrument a function with a logger function.",
   "license": "BSL-1.0",
   "author": "DWJ",
