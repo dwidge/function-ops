@@ -4,6 +4,14 @@ const loggerName = "_instrument_";
 const pre = `return `;
 const skip = pre.length;
 
+const pre2 = `
+function _call(type,pos,[expk,expf],args)=>{
+  const r=await expf(...a.map(([k,v])=>v))
+  await _log(type,pos,[expn,r],args)
+  return r
+}
+return `;
+
 const escape = (s) => s.replace(/\'/g, "\\'");
 
 const isNodeAsync = (node) =>
@@ -18,6 +26,32 @@ const isNodeInLogger = (node) => (
   node.edit.source().includes(loggerName) ||
     (node.parent && isNodeInLogger(node.parent))
 );
+
+const update2 = (node, old, vals) => {
+  const asy = isNodeAsync(node) ? "await" : "";
+  const src = node.edit.source();
+  const eqs = [old, ...vals].map(
+    (a) => `'${escape(a)} = '+${isNodeAsync(node) ? "await" : ""} (${a})`
+  );
+  const pos = [node.start - pre.length, node.end - pre.length];
+  const log = `${loggerName}('${node.type}',[${pos.join(",")}],${eqs.join(
+    ","
+  )})`;
+  const mod = `(${log},${src})`;
+  `(()=>{
+    const a=[${val.map((a) => a).join(",")}]
+    const r=${old}(a)
+    ${loggerName}('${node.type}',[${pos.join(",")}],r,a)
+    return r
+  })()`;
+  const [p0, p1] = [node.start - pre.length, node.end - pre.length];
+  `${asy} call('exp',[2,3],['a+b',(a,b)=>a+b],[['1',${asy} 1],['3+4',3+4],['await d()',await d()]])`;
+  const opEntry = `['${escape(opdesc)}',${op}]`;
+  const argEntrys = args.map((a) => `['${escape(a)}',${asy} ${a}]`).join(",");
+  const mod = `${asy} call('${node.type}',[${p0},${p1}],${opEntry},[${argEntrys}])`;
+  node.edit.old = old;
+  node.edit.update(mod);
+};
 
 const update = (node, old, vals) => {
   const asy = isNodeAsync(node) ? "await " : "";
